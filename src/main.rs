@@ -2,8 +2,10 @@
 #![no_main]
 use core::{arch::global_asm, panic::PanicInfo};
 
-use serial::serial_puts;
+use serial::Serial;
 
+#[macro_use]
+mod print;
 mod serial;
 
 #[no_mangle]
@@ -15,13 +17,23 @@ const STACK_SIZE: usize = 4 * 1024;
 global_asm!(include_str!("boot.s"), sym STACK, const STACK_SIZE);
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    serial_puts("PANIC !!!");
+fn panic(info: &PanicInfo) -> ! {
+    if let Some(location) = info.location() {
+        kprintln!("Panicked at: {}\r\n{}", location, info.message());
+    } else {
+        kprintln!("Panicked at unknown location:\r\n{}", info.message());
+    }
+
     loop {}
 }
 
 #[no_mangle]
 fn main() {
-    serial_puts("Hello World!");
+    let serial = Serial::new();
+
+    kprintln!("It works!");
+
+    kprintln!("Serial: {:?}", serial);
+
     loop {}
 }
