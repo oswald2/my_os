@@ -15,13 +15,23 @@ fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
 
-#[no_mangle]
-fn main() {
+#[inline]
+fn serial_putchar(c: char) {
     let uart_addr = 0x0900_0000 as *mut u8;
 
     unsafe {
-        uart_addr.write_volatile('A' as u8);
+        *uart_addr = c as u8;
     }
+}
 
+fn serial_puts(s: &str) {
+    for c in s.chars() {
+        serial_putchar(c);
+    }
+}
+
+#[no_mangle]
+fn main() {
+    serial_puts("Hello World!");
     loop {}
 }
